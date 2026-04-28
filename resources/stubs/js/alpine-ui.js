@@ -3,7 +3,9 @@ import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floati
 
 window.uiFloatingUi = { arrow, autoUpdate, computePosition, flip, offset, shift };
 
-function bindFloatingMenu(referenceEl, floatingEl, placement, offsetOptions = { mainAxis: 4, crossAxis: 0 }) {
+function bindFloatingMenu(referenceEl, floatingEl, placement, offsetOptions = { mainAxis: 4, crossAxis: 0 }, extra = {}) {
+    const sameWidth = Boolean(extra.sameWidth);
+
     return window.uiFloatingUi.autoUpdate(referenceEl, floatingEl, async () => {
         const { x, y } = await window.uiFloatingUi.computePosition(referenceEl, floatingEl, {
             placement,
@@ -14,11 +16,17 @@ function bindFloatingMenu(referenceEl, floatingEl, placement, offsetOptions = { 
             ],
         });
 
-        Object.assign(floatingEl.style, {
+        const style = {
             position: 'fixed',
             left: `${x}px`,
             top: `${y}px`,
-        });
+        };
+
+        if (sameWidth) {
+            style.width = `${referenceEl.offsetWidth}px`;
+        }
+
+        Object.assign(floatingEl.style, style);
     });
 }
 
@@ -606,6 +614,40 @@ document.addEventListener('alpine:init', () => {
         canScrollDown: false,
         scrollAffordanceObserver: null,
         affordanceOnResize: null,
+        cleanup: null,
+        _onOutsidePointerDown: null,
+
+        _bindOutsidePointerDown() {
+            if (this._onOutsidePointerDown) {
+                return;
+            }
+
+            this._onOutsidePointerDown = (e) => {
+                if (!this.panelOpen) {
+                    return;
+                }
+
+                const ref = this.$refs.reference;
+                const fl = this.$refs.floating;
+
+                if (ref?.contains(e.target) || fl?.contains(e.target)) {
+                    return;
+                }
+
+                this.close();
+            };
+
+            document.addEventListener('pointerdown', this._onOutsidePointerDown, true);
+        },
+
+        _unbindOutsidePointerDown() {
+            if (!this._onOutsidePointerDown) {
+                return;
+            }
+
+            document.removeEventListener('pointerdown', this._onOutsidePointerDown, true);
+            this._onOutsidePointerDown = null;
+        },
 
         init() {
             this.$watch('selectedValue', () => {
@@ -632,6 +674,21 @@ document.addEventListener('alpine:init', () => {
                     this.updateOptionAria();
 
                     await this.$nextTick();
+                    const ref = this.$refs.reference;
+                    const fl = this.$refs.floating;
+
+                    if (ref && fl) {
+                        if (this.cleanup) {
+                            this.cleanup();
+                            this.cleanup = null;
+                        }
+
+                        this.cleanup = bindFloatingMenu(ref, fl, 'bottom-start', { mainAxis: 4, crossAxis: 0 }, { sameWidth: true });
+                    }
+
+                    this._bindOutsidePointerDown();
+
+                    await this.$nextTick();
                     this.$refs.viewport?.focus({ preventScroll: true });
                     this.bindScrollAffordanceObserver();
                     requestAnimationFrame(() => {
@@ -639,6 +696,13 @@ document.addEventListener('alpine:init', () => {
                         requestAnimationFrame(() => this.updateScrollAffordances());
                     });
                 } else {
+                    this._unbindOutsidePointerDown();
+
+                    if (this.cleanup) {
+                        this.cleanup();
+                        this.cleanup = null;
+                    }
+
                     this.unbindScrollAffordanceObserver();
                     this.canScrollUp = false;
                     this.canScrollDown = false;
@@ -971,6 +1035,18 @@ document.addEventListener('alpine:init', () => {
                 e.preventDefault();
                 this.close();
             }
+        },
+
+        destroy() {
+            this._unbindOutsidePointerDown();
+
+            if (this.cleanup) {
+                this.cleanup();
+                this.cleanup = null;
+            }
+
+            this.unbindScrollAffordanceObserver();
+            this.stopScrollHover();
         },
     }));
 
