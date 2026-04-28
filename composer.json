@@ -2,6 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "wirecn/laravel-wirecn",
     "description": "Laravel Blade UI (wirecn): components with Tailwind class merging via cn()",
+    "version": "0.1.0",
     "type": "library",
     "license": "MIT",
     "keywords": [

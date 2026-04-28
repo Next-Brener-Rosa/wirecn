@@ -14,6 +14,10 @@ Blade UI components for Laravel with Tailwind-friendly class merging via **`cn()
 composer require wirecn/laravel-wirecn
 ```
 
+### `minimum-stability: stable` + repositório `path`
+
+Sem tag Git, o Composer trata o pacote local como `dev-*`, o que **falha** com `minimum-stability: stable` no projecto consumidor. Este pacote declara **`"version": "0.1.0"`** no `composer.json` para o `path` satisfazer `^0.1` / `stable`. Em **Packagist**, as versões vêm das **tags Git** (`v0.1.0`, …); ao publicar o repo, incrementa a tag e alinha o campo `version` ou remove-o se usares só tags (recomendado na doc do Composer para pacotes só-VCS).
+
 Publish **views** (required for the default workflow — components live in your app):
 
 ```bash
