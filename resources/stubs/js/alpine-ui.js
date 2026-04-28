@@ -34,11 +34,28 @@ function bindFloating(referenceEl, floatingEl, placement = 'bottom-start') {
     return bindFloatingMenu(referenceEl, floatingEl, placement, { mainAxis: 4, crossAxis: 0 });
 }
 
+function maxCssLengthToPx(value) {
+    if (!value || value === 'none') {
+        return Number.POSITIVE_INFINITY;
+    }
+
+    const n = parseFloat(value);
+
+    return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
+}
+
 /** Select listbox: fixed layer + viewport bounds (modals / overflow). */
 function bindFloatingSelectPanel(referenceEl, floatingEl) {
     const edgeMargin = 12;
 
     return window.uiFloatingUi.autoUpdate(referenceEl, floatingEl, async () => {
+        floatingEl.style.removeProperty('max-height');
+        floatingEl.style.removeProperty('max-width');
+
+        const cs = getComputedStyle(floatingEl);
+        const userMaxH = maxCssLengthToPx(cs.maxHeight);
+        const userMaxW = maxCssLengthToPx(cs.maxWidth);
+
         const { x, y } = await window.uiFloatingUi.computePosition(referenceEl, floatingEl, {
             placement: 'bottom-start',
             middleware: [
@@ -47,9 +64,12 @@ function bindFloatingSelectPanel(referenceEl, floatingEl) {
                 window.uiFloatingUi.shift({ padding: 8 }),
                 window.uiFloatingUi.size({
                     apply({ availableWidth, availableHeight, elements }) {
+                        const availH = Math.max(0, availableHeight - edgeMargin);
+                        const availW = Math.max(0, availableWidth - edgeMargin);
+
                         Object.assign(elements.floating.style, {
-                            maxWidth: `${Math.max(0, availableWidth - edgeMargin)}px`,
-                            maxHeight: `${Math.max(0, availableHeight - edgeMargin)}px`,
+                            maxWidth: `${Math.min(availW, userMaxW)}px`,
+                            maxHeight: `${Math.min(availH, userMaxH)}px`,
                         });
                     },
                 }),
