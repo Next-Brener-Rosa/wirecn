@@ -1,0 +1,20 @@
+# Composer
+/vendor
+
+# PHPUnit
+.phpunit.result.cache
+.phpunit.cache/
+
+# PHP tooling caches
+.php-cs-fixer.cache
+.phpcs-cache
+.phpstan.result.cache
+
+# IDE / editor
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
