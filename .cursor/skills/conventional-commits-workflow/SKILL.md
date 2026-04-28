@@ -12,7 +12,7 @@ description: >-
 
 ## Onde ajustar a versão do pacote
 
-- **Pacote PHP (Composer):** ficheiro `composer.json` na raiz do repositório, propriedade **`"version"`** (semver, por exemplo `0.1.0`).
+- **Pacote PHP (Composer):** ficheiro `composer.json` na raiz do repositório, propriedade **`"version"`** (semver, por exemplo `1.0.0`).
 - Se existir `CHANGELOG.md` ou tags Git alinhadas com releases, mantém a versão **coerente** entre `composer.json`, changelog e tag (sem criar tag nem push salvo pedido explícito).
 
 Atualiza `"version"` apenas quando o conjunto de alterações corresponde a um **release** ou bump de versão acordado; num commit dedicado (por exemplo `chore(release): bump version to x.y.z`) ou integrado na política do projeto, mas **sempre** com mensagem em inglês no formato abaixo.

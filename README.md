@@ -11,12 +11,12 @@ Blade UI components for Laravel with Tailwind-friendly class merging via **`cn()
 ## Install
 
 ```bash
-composer require wirecn/laravel-wirecn
+composer require wirecn/laravel-wirecn:^1.0
 ```
 
 ### `minimum-stability: stable` + repositório `path`
 
-Sem tag Git, o Composer trata o pacote local como `dev-*`, o que **falha** com `minimum-stability: stable` no projecto consumidor. Este pacote declara **`"version": "0.1.0"`** no `composer.json` para o `path` satisfazer `^0.1` / `stable`. Em **Packagist**, as versões vêm das **tags Git** (`v0.1.0`, …); ao publicar o repo, incrementa a tag e alinha o campo `version` ou remove-o se usares só tags (recomendado na doc do Composer para pacotes só-VCS).
+Sem tag Git, o Composer trata o pacote local como `dev-*`, o que **falha** com `minimum-stability: stable` no projecto consumidor. Este pacote declara **`"version": "1.0.0"`** no `composer.json` para repositórios **`path`** satisfazerem `^1.0` / `stable`. Em **Packagist**, a versão publicada vem da **tag Git** (`v1.0.0`, …); mantém o campo `version` alinhado com a última tag estável ou remove-o se usares só tags (recomendado na doc do Composer para pacotes só-VCS).
 
 Publish **views** (required for the default workflow — components live in your app):
 
@@ -43,9 +43,62 @@ Ensure Tailwind scans published components:
 './resources/views/components/wirecn/**/*.blade.php',
 ```
 
-### NPM peers (optional features)
+### NPM dependencies
 
-If you use **charts** (`<x-wirecn.chart>`) or **Phosphor** (`<x-wirecn.phosphor-icon>`), align versions with your app’s `package.json` (React, `@vitejs/plugin-react`, Recharts, `@phosphor-icons/react`, etc.). See your application template for exact pins.
+Composer does **not** install these. After `vendor:publish --tag=wirecn-js`, stubs live under `resources/js/wirecn/`. Install packages in **your app** root (`package.json`).
+
+#### Required if you import `alpine-ui.js`
+
+Used directly by the published bundle:
+
+| Package | Role |
+|---------|--------|
+| [`embla-carousel`](https://www.embla-carousel.com/) | `<x-wirecn.carousel.*>` |
+| [`@floating-ui/dom`](https://floating-ui.com/) | Floating overlays (dropdowns, popovers, tooltips, command palette positioning, etc.) |
+
+```bash
+npm install embla-carousel @floating-ui/dom
+```
+
+#### Optional — Phosphor icons
+
+Needed when you render `<x-wirecn.phosphor-icon>` (and defaults like `<x-wirecn.icon>` that delegate to it).
+
+| Package | Role |
+|---------|--------|
+| `react`, `react-dom` | `phosphor-island.jsx` mounts icons with `createRoot` |
+| [`@phosphor-icons/react`](https://phosphoricons.com/) | Icon modules; `phosphor-registry.jsx` uses `import.meta.glob` over `node_modules/@phosphor-icons/react/dist/csr/*.es.js` (path is relative to **`resources/js/wirecn/`** → your app’s `node_modules`) |
+
+Vite: add [`@vitejs/plugin-react`](https://github.com/vitejs/vite-plugin-react) and ensure `.jsx` under `resources/js/wirecn/` is compiled (same React major as your app).
+
+Example (run after DOM ready; call again after Turbo / Livewire navigations if icons are injected later):
+
+```js
+import { initPhosphorIcons } from './wirecn/phosphor-island.jsx';
+
+void initPhosphorIcons();
+```
+
+#### Optional — Charts
+
+Needed for `<x-wirecn.chart>` (`data-ui-chart` nodes).
+
+| Package | Role |
+|---------|--------|
+| `react`, `react-dom` | Same as above if not already installed |
+| [`recharts`](https://recharts.org/) | Chart primitives in `chart-island.jsx` |
+
+```js
+import { initUiCharts } from './wirecn/chart-island.jsx';
+
+initUiCharts();
+```
+
+#### Versions and licensing
+
+wirecn does not ship a `package.json` for your app: **pin versions** next to your Laravel / Vite / React stack. When upgrading wirecn, re-publish or diff stubs, then adjust npm ranges if builds fail.
+
+Third-party docs: [Embla](https://www.embla-carousel.com/), [Floating UI](https://floating-ui.com/), [Phosphor](https://phosphoricons.com/), [Recharts](https://recharts.org/). You do not need to copy their APIs into this README—only install what you use and wire the init helpers above.
 
 ## Usage
 
