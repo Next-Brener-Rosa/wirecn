@@ -1,0 +1,41 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "livecn/laravel-livecn",
+    "description": "Laravel Blade UI (livecn): components with Tailwind class merging via cn()",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "blade",
+        "tailwind",
+        "ui",
+        "livecn"
+    ],
+    "require": {
+        "php": "^8.3",
+        "gehrisandro/tailwind-merge-php": "^1.2",
+        "illuminate/contracts": "^12.0|^13.0",
+        "illuminate/support": "^12.0|^13.0",
+        "illuminate/view": "^12.0|^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Livecn\\Laravel\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Livecn\\Laravel\\LaravelLivecnServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
