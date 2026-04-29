@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.15] - 2026-04-29
+
+### Fixed
+
+- **Toasts:** avoid duplicate toasts when Livewire delivers the same dispatch to **`Livewire.on`** and a DOM listener; the **`wirecn-toast`** bridge attaches to **`document`** only until Livewire is available, then is removed after **`livewire:init`**; short payload dedupe as a safety net.
+- **`uiDropdownMenu`:** while a menu is open, **`pointerdown`** (capture) on another **`[data-slot="dropdown-menu-trigger"]`** closes the current menu before the other trigger toggles, so only one stays open.
+
+### Changed
+
+- **Toasts:** default auto-dismiss durations (**success** / **info** 5000 ms, **warning** 6000, **error** 8000, **loading** 10000; unknown variant 5000 ms).
+
 ## [1.0.3.14] - 2026-04-29
 
 ### Fixed
