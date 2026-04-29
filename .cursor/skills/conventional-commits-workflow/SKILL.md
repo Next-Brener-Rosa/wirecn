@@ -1,62 +1,64 @@
 ---
 name: conventional-commits-workflow
 description: >-
-  Plans and executes a sequence of local git commits from modified files using
-  Conventional Commits in English; never runs git push unless the user explicitly
-  asks. Covers SemVer (MAJOR/MINOR/PATCH), CHANGELOG/tags, and composer.json
-  version policy. Use for commit batches, releases, conventional commits, or the
-  Portuguese workflow about modified files and commits.
+  Plans and executes local git commits using Conventional Commits in English.
+  Push only when the user explicitly asks (e.g. push, publish, release to origin,
+  or Portuguese: enviar, publicar). Covers SemVer, English CHANGELOG, tags, and
+  composer.json version policy for this package.
 ---
 
 # Conventional commits workflow
 
-## SemVer: quando **MAJOR**, **MINOR** ou **PATCH**
+## SemVer: **MAJOR**, **MINOR**, or **PATCH**
 
-Formato canónico: **`MAJOR.MINOR.PATCH`** ([semver.org](https://semver.org/spec/v2.0.0.html)).
+Canonical format: **`MAJOR.MINOR.PATCH`** ([semver.org](https://semver.org/spec/v2.0.0.html)).
 
-| Bump | Quando usar | Exemplos |
+| Bump | When to use | Examples |
 |------|----------------|----------|
-| **MAJOR** | Alterações **incompatíveis** com a API pública que consumidores já usam: renomear/remover componentes Blade publicados, mudar prefixo/namespace, remover props obrigatórias ou alterar contratos PHP que quebram código existente, mudar comportamento por defeito de forma que apps tenham de alterar código. | `x-wirecn.foo` → `x-wirecn.bar`; remover `wirecnDialogScrollLock`; alterar assinatura de helper público. |
-| **MINOR** | **Novas** capacidades **retrocompatíveis**: novo componente, nova prop opcional, novo export JS, melhorias de API que não obrigam a alterar quem já integra. | Novo `x-wirecn.badge`; novo atributo opcional no dialog; novo middleware Alpine opt-in. |
-| **PATCH** | **Correções** e ajustes que **não** mudam o contrato esperado: bugs, regressões, documentação, performance interna, alinhamento com docs existentes. | Corrigir scroll lock; corrigir posicionamento do select; typos no README. |
+| **MAJOR** | **Incompatible** changes to the public API consumers rely on: rename/remove published Blade components, change prefix/namespace, remove required props or break PHP contracts, change default behaviour so apps must change code. | `x-wirecn.foo` → `x-wirecn.bar`; remove `wirecnDialogScrollLock`; change a public helper signature. |
+| **MINOR** | **New** **backward-compatible** capabilities: new component, optional prop, new JS export, API improvements that do not require existing integrators to change. | New `x-wirecn.badge`; optional dialog attribute; new opt-in Alpine middleware. |
+| **PATCH** | **Fixes** and tweaks that **do not** change the expected contract: bugs, regressions, docs, internal performance, alignment with existing docs. | Fix scroll lock; fix select positioning; README typos. |
 
-**Pré-1.0 (`0.y.z`):** `MINOR` pode incluir breaking changes menores; `PATCH` são correções. Após **1.0.0**, aplicar a tabela acima com rigor.
+**Pre-1.0 (`0.y.z`):** `MINOR` may include smaller breaking changes; `PATCH` is for fixes. After **1.0.0**, apply the table strictly.
 
-**Wirecn / tags Git:** este repositório usou histórico **`1.0.3.x`** (quatro segmentos), o que **não** é SemVer clássico e pode confundir Packagist/comparadores. Preferir passar a **`MAJOR.MINOR.PATCH`** nas novas tags (ex.: `1.0.4` após `1.0.3.5`) salvo decisão explícita de manter o esquema extra; alinhar **`CHANGELOG.md`** e **`composer.json`** (se voltar a existir campo `version`) com a mesma string.
+**Wirecn / Git tags:** this repo has used **`1.0.3.x`** (four segments), which is **not** classic SemVer and can confuse Packagist/comparators. Prefer moving new tags to **`MAJOR.MINOR.PATCH`** (e.g. `1.0.4` after `1.0.3.5`) unless the project explicitly keeps the extra segment; keep **`CHANGELOG.md`** and **`composer.json`** `version` (if present) aligned with the same string.
 
-## Onde ajustar a versão do pacote
+## Where to bump version
 
-- **`composer.json`:** neste pacote o campo **`"version"`** foi **removido** de propósito (evitar divergência com tags e o Packagist ignorar tags). A versão publicada segue **tags Git** (`v1.0.3.6`, etc.) e **`CHANGELOG.md`**.
-- Se noutro projeto existir `"version"` no `composer.json`, deve ficar **coerente** com changelog e tag.
+- **`composer.json`:** in **wirecn/laravel-wirecn**, the **`"version"`** field is **intentionally omitted** (avoid mismatch with tags and Packagist skipping tags). Published versions follow **Git tags** (`v1.0.3.7`, etc.) and **`CHANGELOG.md`**.
+- In other projects, if `"version"` exists in `composer.json`, keep it **consistent** with changelog and tag.
 
-Atualiza versão num commit de release (por exemplo `fix(ui): dialog scroll lock improvements` + entrada no changelog na secção da versão), com mensagem em inglês no formato abaixo. **Tag** `vX.Y.Z` alinhada ao changelog. **Push** só se o utilizador o pedir explicitamente (esta skill assume **sem push** por defeito).
+Release commits use English headers (see below). Add a **`[X.Y.Z]`** section under **`CHANGELOG.md`** and tag **`vX.Y.Z`** when doing a numbered release. **Push** (including **`--force-with-lease`** / tag force) only when the user **explicitly** asks — e.g. “push”, “publish”, “release”, “to origin”, or Portuguese: *enviar*, *publicar*, *fazer push*.
 
-## Instrução do utilizador (texto literal)
+## Changelog language
 
-Quando o utilizador pedir o fluxo nestes termos, segue-os (incluindo não fazer push):
+- **`CHANGELOG.md`** for **wirecn** is maintained in **English** (Keep a Changelog style, international consumers).
+- New **`[Unreleased]`** and release sections: write bullets in **English**.
 
-Com base os arquivos modificados, crie uma cronologia de commits, mas sem realizar o push.
+## Literal user prompt (Portuguese — optional)
 
-Os commits deverão ser em inglês e seguir o padrão de conventional commits:
+When the user asks in these terms, follow them (including **no push** unless they later ask to push):
 
-type(scope): description
+_Com base nos arquivos modificados, crie uma cronologia de commits, mas sem realizar o push. Os commits deverão ser em inglês e seguir o padrão de conventional commits: `type(scope): description`._
 
-## Regras
+## Rules
 
-1. **Analisar** `git status` e `git diff` (e `git diff --cached` se houver staged).
-2. **Propor** uma cronologia: vários commits pequenos e coerentes, cada um com um propósito único (agrupar por domínio: código vs docs vs config vs versão).
-3. **Executar** os commits localmente nessa ordem: `git add` seletivo por commit, depois `git commit -m "..."`.
-4. **Mensagens:** apenas inglês; cabeçalho `type(scope): description` (scope recomendado quando fizer sentido; `description` imperativo, curta, sem ponto final no título).
-5. **Tipos usuais:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`.
-6. **Nunca** executar `git push` (nem `--force`) salvo instrução explícita posterior do utilizador.
+1. **Inspect** `git status` and `git diff` (and `git diff --cached` if staged).
+2. **Propose** a sequence: small, coherent commits, one purpose each (group by domain: code vs docs vs config vs version bump).
+3. **Execute** commits locally in that order: selective `git add`, then `git commit -m "..."`.
+4. **Messages:** English only; header `type(scope): description` (scope when helpful; imperative description; no trailing period in the title).
+5. **Common types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`. Use **`docs(changelog): ...`** for CHANGELOG-only edits.
+6. **Do not** run `git push` (or `--force`) unless the user explicitly requests it afterward.
 
-## Exemplo de cabeçalhos
+## Example headers
 
 - `feat(blade): add wirecn button component`
 - `fix(merge): handle arbitrary class order in cn()`
+- `docs(changelog): translate entries to English`
 - `chore(composer): bump version to 0.2.0`
 
-## Notas
+## Notes
 
-- Não incluir alterações de `vendor/` se estiverem ignoradas; respeitar o `.gitignore` do projeto.
-- Se não houver alterações, explicar e não criar commits vazios.
+- Do not include `vendor/` changes if ignored; respect project `.gitignore`.
+- If there are no changes, explain and do not create empty commits.
+- **Force-pushing** rewritten tags (`vX.Y.Z`) breaks consumers pinning that tag; only do it when the user explicitly wants to replace a release.
