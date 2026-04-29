@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.6] - 2026-04-28
+
+### Fixed
+
+- **`wirecnDialogScrollLock`:** além de `overflow: hidden` em `html`/`body`, aplica-se **`overscroll-behavior: none`**, **`touch-action: none`** no `body`, e — quando **`window.scrollY > 0`** — **`position: fixed`** no `body` com **`top: -scrollY`** para congelar o scroll da página; no `unlock` restaura-se tudo e chama-se **`window.scrollTo(0, scrollY)`**. Contentores de scroll da app (ex.: `main` com **`overflow-y-auto`**) podem declarar **`data-wirecn-scroll-lock`** para receberem o mesmo bloqueio enquanto um dialog/sheet estiver aberto.
+
 ## [1.0.3.5] - 2026-04-28
 
 ### Fixed

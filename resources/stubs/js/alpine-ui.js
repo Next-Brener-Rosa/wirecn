@@ -227,21 +227,78 @@ function mapContextMenuPlacement(side, align) {
 }
 
 /**
- * Bloqueia scroll de `document.documentElement` / `body` enquanto há pelo menos um diálogo WireCN aberto.
- * Contador para empilhar vários modais (ex.: preset + filtros).
+ * Bloqueia scroll enquanto há pelo menos um diálogo WireCN aberto (contador para empilhar modais).
+ *
+ * - `html` / `body`: `overflow: hidden`, `overscroll-behavior: none`, `touch-action: none` no `body`.
+ * - Se `window.scrollY > 0`, `body` fica `position: fixed` com `top: -scrollY` para congelar o scroll da **janela**.
+ * - Layouts que fazem scroll num contentor (ex.: `main` com `overflow-y-auto`): coloca **`data-wirecn-scroll-lock`**
+ *   nesse elemento (pode haver vários); no primeiro `lock` aplicamos `overflow: hidden` + `overscroll-behavior` +
+ *   `touch-action: none` e restauramos no último `unlock`.
  */
 const wirecnDialogScrollLock = (() => {
     let depth = 0;
     let htmlOverflow = '';
+    let htmlOverscrollBehavior = '';
     let bodyOverflow = '';
+    let bodyOverscrollBehavior = '';
+    let bodyTouchAction = '';
+    let bodyPosition = '';
+    let bodyTop = '';
+    let bodyLeft = '';
+    let bodyRight = '';
+    let bodyWidth = '';
+    let savedScrollY = 0;
+    /** @type {{ el: HTMLElement; overflow: string; overscrollBehavior: string; touchAction: string }[]} */
+    let scrollRootSnapshots = [];
 
     return {
         lock() {
             if (depth === 0) {
-                htmlOverflow = document.documentElement.style.overflow;
-                bodyOverflow = document.body.style.overflow;
-                document.documentElement.style.overflow = 'hidden';
-                document.body.style.overflow = 'hidden';
+                const html = document.documentElement;
+                const body = document.body;
+
+                htmlOverflow = html.style.overflow;
+                htmlOverscrollBehavior = html.style.overscrollBehavior;
+                bodyOverflow = body.style.overflow;
+                bodyOverscrollBehavior = body.style.overscrollBehavior;
+                bodyTouchAction = body.style.touchAction;
+                bodyPosition = body.style.position;
+                bodyTop = body.style.top;
+                bodyLeft = body.style.left;
+                bodyRight = body.style.right;
+                bodyWidth = body.style.width;
+
+                savedScrollY = window.scrollY || html.scrollTop || 0;
+
+                html.style.overflow = 'hidden';
+                html.style.overscrollBehavior = 'none';
+                body.style.overflow = 'hidden';
+                body.style.overscrollBehavior = 'none';
+                body.style.touchAction = 'none';
+
+                document.querySelectorAll('[data-wirecn-scroll-lock]').forEach((el) => {
+                    if (!(el instanceof HTMLElement)) {
+                        return;
+                    }
+
+                    scrollRootSnapshots.push({
+                        el,
+                        overflow: el.style.overflow,
+                        overscrollBehavior: el.style.overscrollBehavior,
+                        touchAction: el.style.touchAction,
+                    });
+                    el.style.overflow = 'hidden';
+                    el.style.overscrollBehavior = 'none';
+                    el.style.touchAction = 'none';
+                });
+
+                if (savedScrollY > 0) {
+                    body.style.position = 'fixed';
+                    body.style.top = `-${savedScrollY}px`;
+                    body.style.left = '0';
+                    body.style.right = '0';
+                    body.style.width = '100%';
+                }
             }
 
             depth += 1;
@@ -250,10 +307,34 @@ const wirecnDialogScrollLock = (() => {
         unlock() {
             depth = Math.max(0, depth - 1);
 
-            if (depth === 0) {
-                document.documentElement.style.overflow = htmlOverflow;
-                document.body.style.overflow = bodyOverflow;
+            if (depth !== 0) {
+                return;
             }
+
+            const html = document.documentElement;
+            const body = document.body;
+
+            for (let i = scrollRootSnapshots.length - 1; i >= 0; i -= 1) {
+                const r = scrollRootSnapshots[i];
+                r.el.style.overflow = r.overflow;
+                r.el.style.overscrollBehavior = r.overscrollBehavior;
+                r.el.style.touchAction = r.touchAction;
+            }
+
+            scrollRootSnapshots = [];
+
+            html.style.overflow = htmlOverflow;
+            html.style.overscrollBehavior = htmlOverscrollBehavior;
+            body.style.overflow = bodyOverflow;
+            body.style.overscrollBehavior = bodyOverscrollBehavior;
+            body.style.touchAction = bodyTouchAction;
+            body.style.position = bodyPosition;
+            body.style.top = bodyTop;
+            body.style.left = bodyLeft;
+            body.style.right = bodyRight;
+            body.style.width = bodyWidth;
+
+            window.scrollTo(0, savedScrollY);
         },
     };
 })();
