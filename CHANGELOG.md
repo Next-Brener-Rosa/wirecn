@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.11] - 2026-04-29
+
+### Added
+
+- **`x-wirecn.toaster`:** fixed toast region (Sonner-style stack), CSS variables **`--normal-bg` / `--normal-text` / `--normal-border` / `--border-radius`**, variants **success**, **info**, **warning**, **error**, **loading** (inline SVG icons), optional **`position`** (`bottom-right`, `bottom-left`, `top-right`, `top-left`).
+- **`window.toast`:** **`success`**, **`warning`**, **`error`**, **`info`**, **`loading`** (message + optional **`description`**, **`duration`**, **`duration: false`** to disable auto-dismiss), **`dismiss(id)`**; backed by **`Alpine.store('wirecnToast')`** (max 5, default durations per variant; **loading** has no auto-dismiss by default).
+- **Livewire:** **`Livewire.on('wirecn-toast', …)`** (after **`livewire:init`**) and **`document`** event **`wirecn-toast`** with **`detail`** **`{ type, message | title, description?, duration? }`**.
+
 ## [1.0.3.10] - 2026-04-29
 
 ### Added
