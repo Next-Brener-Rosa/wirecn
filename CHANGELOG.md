@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.12] - 2026-04-29
+
+### Fixed
+
+- **`uiDropdownMenu`:** content closes after activating a **menuitem** / **checkbox** / **radio** (bubble `click` on content), so the panel does not stay open under a **dialog**; ignores **submenu** triggers and **disabled** items.
+- **`uiDropdownMenu`:** outside-close uses **`composedPath()`** and listens to **`click`** as well as **`pointerdown`** (capture on `document`) so closing on **outside click** stays reliable.
+
 ## [1.0.3.11] - 2026-04-29
 
 ### Added
