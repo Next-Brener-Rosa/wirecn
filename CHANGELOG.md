@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.5] - 2026-04-28
+
+### Fixed
+
+- **Select / Floating UI:** `flip` e `shift` do painel usam **`boundary`** = retângulo do **Visual Viewport** (ou `documentElement.clientWidth`/`Height`) + **`rootBoundary: 'viewport'`**, em vez de confiar só em **`clippingAncestors`** do trigger — assim o espaço útil é o **ecrã**, não a caixa do dialog com **`overflow-y-auto` / `overflow: hidden`**, e o painel abre para **cima** junto ao fundo da página quando falta espaço por baixo.
+- **Select:** posicionamento só depois de **dois `requestAnimationFrame`** e até **20** tentativas enquanto **`getBoundingClientRect().height < 1`** (evita medir com **`x-show`** ainda sem layout); transições do painel passam a **só opacidade** (sem **`scale-95`**), para o Floating UI não subestimar a altura durante a animação.
+
 ## [1.0.3.4] - 2026-04-28
 
 ### Changed

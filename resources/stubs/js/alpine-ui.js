@@ -27,19 +27,56 @@ function bindFloating(referenceEl, floatingEl, placement = 'bottom-start') {
     return bindFloatingMenu(referenceEl, floatingEl, placement, { mainAxis: 4, crossAxis: 0 });
 }
 
+/** Retângulo do ecrã visível (Visual Viewport quando existir) para `flip`/`shift` do select — evita usar `clippingAncestors` do trigger (ex.: dialog com `overflow: hidden`). */
+function getFloatingSelectViewportRect() {
+    if (typeof window === 'undefined') {
+        return { x: 0, y: 0, width: 0, height: 0 };
+    }
+
+    const vv = window.visualViewport;
+
+    if (vv) {
+        return {
+            x: vv.offsetLeft,
+            y: vv.offsetTop,
+            width: vv.width,
+            height: vv.height,
+        };
+    }
+
+    const el = document.documentElement;
+
+    return {
+        x: 0,
+        y: 0,
+        width: el.clientWidth,
+        height: el.clientHeight,
+    };
+}
+
+function floatingSelectOverflowMiddlewareOptions() {
+    return {
+        padding: 8,
+        rootBoundary: 'viewport',
+        boundary: getFloatingSelectViewportRect(),
+    };
+}
+
 /**
- * Listbox do `uiSelect`: `fixed` + largura do trigger; `flip`/`shift` para viewport e ancestrais com `transform`.
+ * Listbox do `uiSelect`: `fixed` + largura do trigger; `flip`/`shift` relativos ao **viewport** (não ao dialog).
  * Sem middleware `size` a escrever altura em inline style (fica a cargo das classes Tailwind no painel).
  */
 function bindFloatingSelectPanel(referenceEl, floatingEl) {
     return window.uiFloatingUi.autoUpdate(referenceEl, floatingEl, async () => {
+        const overflow = floatingSelectOverflowMiddlewareOptions();
+
         const { x, y } = await window.uiFloatingUi.computePosition(referenceEl, floatingEl, {
             placement: 'bottom-start',
             strategy: 'fixed',
             middleware: [
                 window.uiFloatingUi.offset({ mainAxis: 4, crossAxis: 0 }),
-                window.uiFloatingUi.flip({ padding: 8 }),
-                window.uiFloatingUi.shift({ padding: 8 }),
+                window.uiFloatingUi.flip(overflow),
+                window.uiFloatingUi.shift(overflow),
             ],
         });
 
@@ -765,21 +802,45 @@ document.addEventListener('alpine:init', () => {
                     this.updateOptionAria();
 
                     await this.$nextTick();
-                    const refEl = this.$refs.reference;
-                    const panelEl = this.$refs.floatingPanel;
 
-                    if (refEl && panelEl) {
-                        this.unbindPanelPosition();
-                        this.panelPositionCleanup = bindFloatingSelectPanel(refEl, panelEl);
-                    }
+                    const bindWhenLaidOut = (attempt) => {
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                if (!this.panelOpen) {
+                                    return;
+                                }
 
-                    await this.$nextTick();
-                    this.$refs.viewport?.focus({ preventScroll: true });
-                    this.bindScrollAffordanceObserver();
-                    requestAnimationFrame(() => {
-                        this.updateScrollAffordances();
-                        requestAnimationFrame(() => this.updateScrollAffordances());
-                    });
+                                const refEl = this.$refs.reference;
+                                const panelEl = this.$refs.floatingPanel;
+
+                                if (!refEl || !panelEl) {
+                                    return;
+                                }
+
+                                const { height } = panelEl.getBoundingClientRect();
+
+                                if (height < 1 && attempt < 20) {
+                                    bindWhenLaidOut(attempt + 1);
+
+                                    return;
+                                }
+
+                                this.unbindPanelPosition();
+                                this.panelPositionCleanup = bindFloatingSelectPanel(refEl, panelEl);
+
+                                this.$nextTick(() => {
+                                    this.$refs.viewport?.focus({ preventScroll: true });
+                                    this.bindScrollAffordanceObserver();
+                                    requestAnimationFrame(() => {
+                                        this.updateScrollAffordances();
+                                        requestAnimationFrame(() => this.updateScrollAffordances());
+                                    });
+                                });
+                            });
+                        });
+                    };
+
+                    bindWhenLaidOut(0);
                 } else {
                     this.unbindPanelPosition();
                     this.unbindScrollAffordanceObserver();
