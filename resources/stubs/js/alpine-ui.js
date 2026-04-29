@@ -363,6 +363,195 @@ document.addEventListener('alpine:init', () => {
         });
     }
 
+    const wirecnToastDismissTimers = new Map();
+
+    const wirecnToastDefaultDuration = {
+        default: 4000,
+        success: 4000,
+        warning: 5000,
+        error: 6000,
+        info: 4000,
+        loading: null,
+    };
+
+    Alpine.store('wirecnToast', {
+        items: [],
+        maxItems: 5,
+
+        clearDismissTimer(id) {
+            const tid = wirecnToastDismissTimers.get(id);
+
+            if (tid != null) {
+                clearTimeout(tid);
+            }
+
+            wirecnToastDismissTimers.delete(id);
+        },
+
+        dismiss(id) {
+            const sid = String(id);
+            this.clearDismissTimer(sid);
+            this.items = this.items.filter((t) => t.id !== sid);
+        },
+
+        add({ variant = 'default', title = '', description = '', duration: durationOverride } = {}) {
+            const id = `wt_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+            const v = String(variant || 'default').toLowerCase();
+            const safeTitle = String(title ?? '');
+            const safeDescription = String(description ?? '');
+            let duration = durationOverride;
+
+            if (duration === undefined) {
+                duration = wirecnToastDefaultDuration[v] ?? (v === 'loading' ? null : 4000);
+            }
+
+            if (duration === false) {
+                duration = null;
+            }
+
+            this.items = [...this.items, { id, variant: v, title: safeTitle, description: safeDescription }];
+
+            while (this.items.length > this.maxItems) {
+                this.dismiss(this.items[0].id);
+            }
+
+            if (duration !== null && duration !== undefined && Number(duration) > 0) {
+                this.clearDismissTimer(id);
+                wirecnToastDismissTimers.set(
+                    id,
+                    setTimeout(() => {
+                        this.dismiss(id);
+                    }, Number(duration)),
+                );
+            }
+
+            return id;
+        },
+    });
+
+    function wirecnToastNormalizePayload(...args) {
+        if (args.length === 0) {
+            return null;
+        }
+
+        const a0 = args[0];
+
+        if (typeof a0 === 'object' && a0 !== null && !Array.isArray(a0)) {
+            return a0;
+        }
+
+        if (typeof a0 === 'string' && args.length >= 2) {
+            return { type: a0, message: args[1] };
+        }
+
+        return null;
+    }
+
+    function wirecnToastDispatchFromPayload(detail) {
+        const p =
+            detail != null && typeof detail === 'object' && !Array.isArray(detail)
+                ? detail
+                : wirecnToastNormalizePayload(detail);
+
+        if (!p || typeof p !== 'object') {
+            return;
+        }
+
+        const type = String(p.type ?? p.variant ?? 'info').toLowerCase();
+        const message = p.message ?? p.title ?? '';
+        const options = {
+            description: p.description,
+            duration: p.duration,
+        };
+
+        const t = window.toast;
+
+        if (!t || typeof t[type] !== 'function') {
+            return;
+        }
+
+        return t[type](message, options);
+    }
+
+    window.toast = {
+        success(message, options) {
+            return Alpine.store('wirecnToast').add({
+                ...((options && typeof options === 'object' && options) || {}),
+                variant: 'success',
+                title: typeof message === 'string' ? message : String(message ?? ''),
+            });
+        },
+
+        warning(message, options) {
+            return Alpine.store('wirecnToast').add({
+                ...((options && typeof options === 'object' && options) || {}),
+                variant: 'warning',
+                title: typeof message === 'string' ? message : String(message ?? ''),
+            });
+        },
+
+        error(message, options) {
+            return Alpine.store('wirecnToast').add({
+                ...((options && typeof options === 'object' && options) || {}),
+                variant: 'error',
+                title: typeof message === 'string' ? message : String(message ?? ''),
+            });
+        },
+
+        info(message, options) {
+            return Alpine.store('wirecnToast').add({
+                ...((options && typeof options === 'object' && options) || {}),
+                variant: 'info',
+                title: typeof message === 'string' ? message : String(message ?? ''),
+            });
+        },
+
+        loading(message, options) {
+            return Alpine.store('wirecnToast').add({
+                ...((options && typeof options === 'object' && options) || {}),
+                variant: 'loading',
+                title: typeof message === 'string' ? message : String(message ?? ''),
+            });
+        },
+
+        dismiss(id) {
+            Alpine.store('wirecnToast').dismiss(id);
+        },
+    };
+
+    document.addEventListener('wirecn-toast', (e) => {
+        wirecnToastDispatchFromPayload(e.detail);
+    });
+
+    const registerWirecnToastLivewire = () => {
+        const LW = window.Livewire;
+
+        if (!LW || typeof LW.on !== 'function') {
+            return;
+        }
+
+        LW.on('wirecn-toast', (event) => {
+            const raw =
+                event && typeof event === 'object' && event.detail != null && typeof event.detail === 'object'
+                    ? event.detail
+                    : event;
+
+            const p = wirecnToastNormalizePayload(raw) ?? raw;
+
+            if (!p || typeof p !== 'object') {
+                return;
+            }
+
+            wirecnToastDispatchFromPayload(p);
+        });
+    };
+
+    if (window.Livewire?.on) {
+        registerWirecnToastLivewire();
+    } else {
+        document.addEventListener('livewire:init', registerWirecnToastLivewire);
+    }
+
     Alpine.data('uiDialog', () => ({
         open: false,
 
