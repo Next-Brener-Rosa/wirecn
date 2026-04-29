@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.4] - 2026-04-28
+
+### Changed
+
+- **Select (`x-wirecn.select.content`):** listbox volta a **`x-teleport="body"`** com **`fixed`**, **`z-[100]`** (acima de dialogs/sheets em **`z-50`**), **`wire:ignore`**, transições explícitas e **`x-ref="floatingPanel"`**. Classes base incluem **`max-h-[min(24rem,calc(100dvh-2rem))]`**; o consumidor pode sobrescrever com **`class="..."`** — merge via **`cn(..., $attributes->get('class'))`** + **`except('class')`** para o tailwind-merge resolver conflitos (ex.: **`max-h-40`**).
+- **`bindFloatingSelectPanel`:** **`strategy: 'fixed'`**, **`offset`**, **`flip({ padding: 8 })`** (abre para cima junto ao fundo do viewport quando necessário), **`shift({ padding: 8 })`**; sem middleware **`size`** a definir altura em estilo inline. Largura do painel alinhada ao trigger (mín. 144px) com respeito a **`max-width`** (inline ou computado).
+- **`uiSelect`:** posicionamento com **`autoUpdate`**, **`unbindPanelPosition`** ao fechar; **`onSelectPointerDownOutside`** considera **`reference`** e **`floatingPanel`**.
+
 ## [1.0.3.3] - 2026-04-28
 
 ### Changed
