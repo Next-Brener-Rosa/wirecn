@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.3] - 2026-04-28
+
+### Changed
+
+- **Select:** listbox de volta **no DOM do componente** (`absolute top-full`, `wire:ignore`) em vez de **`x-teleport="body"`** + posicionamento Floating UI; removidos **`bindFloatingSelectPanel`**, cleanup do painel e **`x-ref="floatingPanel"`**; **`onSelectPointerDownOutside`** volta a usar **`this.$el.contains`** para cliques fora. Menus e tooltips mantêm **`strategy: 'fixed'`** onde ainda usam camada fixa.
+
 ## [1.0.3.2] - 2026-04-28
 
 ### Fixed

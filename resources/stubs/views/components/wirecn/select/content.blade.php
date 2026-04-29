@@ -9,32 +9,26 @@
     ]);
 @endphp
 
-<template x-teleport="body">
-    <div
-        x-ref="floatingPanel"
-        x-show="panelOpen"
-        x-cloak
-        role="presentation"
-        data-slot="select-content"
-        x-on:click="$event.stopPropagation()"
-        x-transition:enter="transition ease-out duration-100"
-        x-transition:enter-start="opacity-0 scale-95"
-        x-transition:enter-end="opacity-100 scale-100"
-        x-transition:leave="transition ease-in duration-100"
-        x-transition:leave-start="opacity-100 scale-100"
-        x-transition:leave-end="opacity-0 scale-95"
-        {{ $attributes->class(cn(
-            'fixed z-[100] flex min-h-0 flex-col overscroll-contain overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 dark:ring-border/60',
-        )) }}
+<div
+    wire:ignore
+    x-ref="selectPanel"
+    x-show="panelOpen"
+    x-cloak
+    role="presentation"
+    data-slot="select-content"
+    x-on:click="$event.stopPropagation()"
+    x-transition
+    {{ $attributes->class(cn(
+        'absolute top-full left-0 z-50 mt-1.5 flex min-h-0 max-h-[min(18rem,calc(100vh-8rem))] w-full min-w-full origin-top flex-col overscroll-contain overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 dark:ring-border/60',
+    )) }}
+>
+    <x-wirecn.select.scroll-up-button />
+    <x-wirecn.scroll-area
+        viewport-ref="viewport"
+        :viewport-attributes="$__selectListboxViewport"
+        class="min-h-0 min-w-0 flex-1"
     >
-        <x-wirecn.select.scroll-up-button />
-        <x-wirecn.scroll-area
-            viewport-ref="viewport"
-            :viewport-attributes="$__selectListboxViewport"
-            class="min-h-0 min-w-0 flex-1"
-        >
-            {{ $slot }}
-        </x-wirecn.scroll-area>
-        <x-wirecn.select.scroll-down-button />
-    </div>
-</template>
+        {{ $slot }}
+    </x-wirecn.scroll-area>
+    <x-wirecn.select.scroll-down-button />
+</div>

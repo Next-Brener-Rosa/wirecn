@@ -27,45 +27,6 @@ function bindFloating(referenceEl, floatingEl, placement = 'bottom-start') {
     return bindFloatingMenu(referenceEl, floatingEl, placement, { mainAxis: 4, crossAxis: 0 });
 }
 
-/**
- * Listbox do `uiSelect`: fixed + largura do trigger; `size` evita estourar a viewport (scroll no `html`).
- */
-function bindFloatingSelectPanel(referenceEl, floatingEl) {
-    return window.uiFloatingUi.autoUpdate(referenceEl, floatingEl, async () => {
-        const { x, y } = await window.uiFloatingUi.computePosition(referenceEl, floatingEl, {
-            placement: 'bottom-start',
-            strategy: 'fixed',
-            middleware: [
-                window.uiFloatingUi.offset({ mainAxis: 4, crossAxis: 0 }),
-                window.uiFloatingUi.flip(),
-                window.uiFloatingUi.shift({ padding: 8 }),
-                window.uiFloatingUi.size({
-                    apply({ availableHeight, availableWidth, elements }) {
-                        const pad = 12;
-                        const maxH = Math.max(120, availableHeight - pad);
-                        const maxW = Math.max(160, availableWidth - pad);
-
-                        Object.assign(elements.floating.style, {
-                            maxHeight: `${maxH}px`,
-                            maxWidth: `${maxW}px`,
-                        });
-                    },
-                }),
-            ],
-        });
-
-        const maxWStyle = parseFloat(floatingEl.style.maxWidth) || Number.POSITIVE_INFINITY;
-        const w = Math.min(Math.max(referenceEl.offsetWidth, 144), maxWStyle);
-
-        Object.assign(floatingEl.style, {
-            position: 'fixed',
-            left: `${x}px`,
-            top: `${y}px`,
-            width: `${w}px`,
-        });
-    });
-}
-
 function bindFloatingTooltip(referenceEl, floatingEl, arrowEl, placement, offsetOptions = { mainAxis: 4, crossAxis: 0 }) {
     return window.uiFloatingUi.autoUpdate(referenceEl, floatingEl, async () => {
         const middleware = [
@@ -705,32 +666,13 @@ document.addEventListener('alpine:init', () => {
         canScrollDown: false,
         scrollAffordanceObserver: null,
         affordanceOnResize: null,
-        panelPositionCleanup: null,
-
-        unbindPanelPosition() {
-            if (this.panelPositionCleanup) {
-                this.panelPositionCleanup();
-                this.panelPositionCleanup = null;
-            }
-
-            const fl = this.$refs.floatingPanel;
-
-            if (fl) {
-                ['left', 'top', 'position', 'width', 'maxWidth', 'maxHeight'].forEach((prop) => {
-                    fl.style[prop] = '';
-                });
-            }
-        },
 
         onSelectPointerDownOutside(e) {
             if (!this.panelOpen || this.disabled) {
                 return;
             }
 
-            const ref = this.$refs.reference;
-            const fl = this.$refs.floatingPanel;
-
-            if (ref?.contains(e.target) || fl?.contains(e.target)) {
+            if (this.$el.contains(e.target)) {
                 return;
             }
 
@@ -762,15 +704,6 @@ document.addEventListener('alpine:init', () => {
                     this.updateOptionAria();
 
                     await this.$nextTick();
-                    const refEl = this.$refs.reference;
-                    const panelEl = this.$refs.floatingPanel;
-
-                    if (refEl && panelEl) {
-                        this.unbindPanelPosition();
-                        this.panelPositionCleanup = bindFloatingSelectPanel(refEl, panelEl);
-                    }
-
-                    await this.$nextTick();
                     this.$refs.viewport?.focus({ preventScroll: true });
                     this.bindScrollAffordanceObserver();
                     requestAnimationFrame(() => {
@@ -778,8 +711,6 @@ document.addEventListener('alpine:init', () => {
                         requestAnimationFrame(() => this.updateScrollAffordances());
                     });
                 } else {
-                    this.unbindPanelPosition();
-
                     this.unbindScrollAffordanceObserver();
                     this.canScrollUp = false;
                     this.canScrollDown = false;
