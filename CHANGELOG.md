@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.13] - 2026-04-29
+
+### Changed
+
+- **`x-wirecn.field.error`:** supports Laravel / Livewire validation via **`name`** / **`for`** (same keys as **`@error('form.name')`**), optional **`:errors="$errors"`** on **`ViewErrorBag` / `MessageBag`** for that key, plus usage notes for **`invalid`** on **`x-wirecn.field`**.
+
 ## [1.0.3.12] - 2026-04-29
 
 ### Fixed
