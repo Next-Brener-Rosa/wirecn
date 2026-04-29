@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.8] - 2026-04-28
+
 ### Changed
 
 - **`x-wirecn.combobox.content`:** aligned with the select — **`x-teleport="body"`**, **`fixed`**, **`z-[100]`**, **`wire:ignore`**, **`x-ref="floatingPanel"`**, class merge via **`cn(..., $attributes->get('class'))`** + **`except('class')`**, **`x-transition.opacity.duration.100ms`**, **`transitionend`** to clear styles after close.
