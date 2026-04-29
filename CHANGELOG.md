@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.10] - 2026-04-29
+
+### Added
+
+- **`x-wirecn.field`:** compound field primitives aligned with shadcn/ui Field — **`set`**, **`legend`**, **`group`**, **`field`**, **`content`**, **`label`** (wraps **`x-wirecn.label`**), **`title`**, **`description`**, **`separator`** (uses **`x-wirecn.separator`**), **`error`** (slot or **`errors`** iterable of messages / `message` keys, deduped).
+
 ## [1.0.3.9] - 2026-04-28
 
 ### Changed
