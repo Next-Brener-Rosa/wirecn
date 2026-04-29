@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.7] - 2026-04-28
+
+### Fixed
+
+- **`uiSelect`:** ao fechar, o **`autoUpdate`** do Floating UI para logo; a limpeza de **`left` / `top` / `position`** no painel só corre no **`transitionend`** de **`opacity`** no próprio **`floatingPanel`** (com **`panelOpen`** já falso), alinhado ao fim real do **`x-transition:leave`** — evita painel **`fixed`** sem coordenadas visível no canto e fechos espúrios por **`mousedown`** fora, sem **`setTimeout`** acoplado à duração CSS.
+
 ## [1.0.3.6] - 2026-04-28
 
 ### Fixed

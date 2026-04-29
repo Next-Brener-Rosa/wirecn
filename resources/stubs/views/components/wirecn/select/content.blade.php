@@ -23,6 +23,7 @@
         role="presentation"
         data-slot="select-content"
         x-on:click="$event.stopPropagation()"
+        x-on:transitionend="onFloatingPanelTransitionEnd($event)"
         x-transition:enter="transition ease-out duration-100"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"

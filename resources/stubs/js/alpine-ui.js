@@ -828,12 +828,14 @@ document.addEventListener('alpine:init', () => {
         affordanceOnResize: null,
         panelPositionCleanup: null,
 
-        unbindPanelPosition() {
+        stopPanelFloatingUpdates() {
             if (this.panelPositionCleanup) {
                 this.panelPositionCleanup();
                 this.panelPositionCleanup = null;
             }
+        },
 
+        clearPanelFloatingStyles() {
             const fl = this.$refs.floatingPanel;
 
             if (fl) {
@@ -841,6 +843,29 @@ document.addEventListener('alpine:init', () => {
                     fl.style[prop] = '';
                 });
             }
+        },
+
+        unbindPanelPosition() {
+            this.stopPanelFloatingUpdates();
+            this.clearPanelFloatingStyles();
+        },
+
+        /**
+         * Limpa estilos inline do painel após o fim real da transição de **opacity** no leave
+         * (evita `fixed` sem left/top durante `x-transition:leave` sem acoplar duração em ms ao CSS).
+         */
+        onFloatingPanelTransitionEnd(e) {
+            const fl = this.$refs.floatingPanel;
+
+            if (!fl || e.target !== fl || e.propertyName !== 'opacity') {
+                return;
+            }
+
+            if (this.panelOpen) {
+                return;
+            }
+
+            this.clearPanelFloatingStyles();
         },
 
         onSelectPointerDownOutside(e) {
@@ -923,7 +948,7 @@ document.addEventListener('alpine:init', () => {
 
                     bindWhenLaidOut(0);
                 } else {
-                    this.unbindPanelPosition();
+                    this.stopPanelFloatingUpdates();
                     this.unbindScrollAffordanceObserver();
                     this.canScrollUp = false;
                     this.canScrollDown = false;
