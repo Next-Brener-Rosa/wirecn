@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3.14] - 2026-04-29
+
+### Fixed
+
+- **`x-wirecn.textarea`:** respects parent width in flex/grid (**`min-w-0`**, **`max-w-full`**, **`box-border`**), wraps long lines (**`whitespace-pre-wrap`**, **`break-words`**), drops erroneous **`flex`**, sets **`resize-y`**.
+- **`x-wirecn.input-group.textarea`:** same **`min-w-0` / `max-w-full`** and wrapping for consistency inside input groups.
+
 ## [1.0.3.13] - 2026-04-29
 
 ### Changed
